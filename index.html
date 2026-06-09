@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineStream - Extraordinary</title>
+    <!-- Google Fonts & Font Awesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* CSS Variables for Netflix-Style Palette */
+        :root {
+            --bg-color: #141414;
+            --bg-card: #181818;
+            --bg-hover: #2f2f2f;
+            --primary: #e50914;
+            --primary-hover: #f40612;
+            --text-main: #ffffff;
+            --text-muted: #aaaaaa;
+            --font-stack: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --transition-smooth: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        /* Base Reset & Styling */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-stack);
+            overflow-x: hidden;
+            line-height: 1.5;
+        }
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        /* Navigation Bar */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: linear-gradient(to bottom, rgba(20,20,20,0.95) 0%, rgba(20,20,20,0.8) 80%, rgba(20,20,20,0) 100%);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 4%;
+            transition: var(--transition-smooth);
+        }
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        nav {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+        .nav-link {
+            font-weight: 500;
+            transition: var(--transition-smooth);
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary);
+        }
+        .admin-btn {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.4rem 0.9rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .admin-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* Layout Container */
+        main {
+            padding: 2rem 4%;
+            min-height: 80vh;
+        }
+
+        /* Views (SPA routing containers) */
+        .view-section {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out forwards;
+        }
+        .view-section.active-view {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Grid Lists */
+        .shows-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        /* Cards Structure */
+        .card {
+            background-color: var(--bg-card);
+            border-radius: 6px;
+            overflow: hidden;
+            transition: var(--transition-smooth);
+            position: relative;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .card:hover {
+            transform: scale(1.04);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+        }
+        .card-img-wrapper {
+            position: relative;
+            width: 100%;
+            padding-top: 140%; /* 2:3 aspect ratio */
+            overflow: hidden;
+            background-color: #222;
+        }
+        .card-img-wrapper img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition-smooth);
+        }
+        .card-details {
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+        .card-genre {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--primary);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.25rem;
+        }
+        .card-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            line-height: 1.25;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .card-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-top: auto;
+        }
+
+        /* Hero Banner for Show Details */
+        .hero-banner {
+            position: relative;
+            min-height: 40vh;
+            border-radius: 8px;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: flex-end;
+            padding: 3rem;
+            margin-bottom: 2rem;
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.8);
+        }
+        .hero-banner::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to top, rgba(20,20,20,1) 0%, rgba(20,20,20,0.4) 60%, rgba(20,20,20,0.1) 100%);
+            z-index: 1;
+        }
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 650px;
+        }
+        .hero-genre {
+            color: var(--primary);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+        .hero-title {
+            font-size: 2.8rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+        }
+        .hero-desc {
+            color: rgba(255,255,255,0.9);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Show details Tab/Navigation styling */
+        .seasons-nav-container {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .season-selector {
+            background-color: var(--bg-card);
+            color: var(--text-main);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* Episode Grid & Flex List */
+        .episodes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        .episode-card {
+            background-color: var(--bg-card);
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .episode-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .episode-thumb-wrapper {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            background-color: #222;
+        }
+        .episode-thumb-wrapper img {
+            position: absolute;
+            top:0; left:0; width:100%; height:100%;
+            object-fit: cover;
+        }
+        .episode-thumb-play {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.6);
+            border-radius: 50%;
+            width: 50px; height: 50px;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0;
+            transition: var(--transition-smooth);
+        }
+        .episode-card:hover .episode-thumb-play {
+            opacity: 1;
+        }
+        .episode-thumb-play i {
+            color: #fff; font-size: 1.25rem; margin-left: 3px;
+        }
+        .episode-card-body {
+            padding: 1rem;
+        }
+        .episode-meta {
+            font-size: 0.8rem;
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        .episode-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .episode-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Watch Page Elements */
+        .watch-container {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 2rem;
+        }
+        @media (max-width: 992px) {
+            .watch-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Player Styling */
+        .player-wrapper {
+            background-color: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .video-container-ratio {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 aspect */
+        }
+        .video-container-ratio video,
+        .video-container-ratio iframe {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            border: none;
+        }
+        
+        /* Streaming Source Selector */
+        .source-switcher {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            background: var(--bg-card);
+            padding: 10px 15px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .source-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        .source-btn-toggle {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+        .source-btn-toggle.active {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* Navigation between episodes */
+        .episode-nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+            gap: 1rem;
+        }
+        .ep-nav-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 6px;
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .ep-nav-btn:hover:not(:disabled) {
+            background: rgba(255,255,255,0.1);
+            border-color: var(--primary);
+        }
+        .ep-nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* Watch Details Info */
+        .watch-details {
+            margin-top: 1.5rem;
+        }
+        .watch-show-title {
+            font-size: 0.9rem;
+            color: var(--primary);
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .watch-episode-heading {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin: 0.25rem 0 1rem 0;
+        }
+        .watch-episode-desc {
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* Sidebar Recommendations */
+        .sidebar-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            border-left: 3px solid var(--primary);
+            padding-left: 10px;
+        }
+        .sidebar-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .sidebar-item {
+            display: flex;
+            gap: 10px;
+            background-color: var(--bg-card);
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+        .sidebar-item:hover {
+            background-color: var(--bg-hover);
+        }
+        .sidebar-thumb {
+            width: 100px;
+            height: 60px;
+            background-color: #222;
+            border-radius: 4px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .sidebar-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .sidebar-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-width: 0;
+        }
+        .sidebar-ep-meta {
+            font-size: 0.75rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+        .sidebar-ep-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Admin Dashboard Panels */
+        .admin-dashboard {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+        }
+        @media (max-width: 992px) {
+            .admin-dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+        .admin-box {
+            background-color: var(--bg-card);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .admin-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            color: var(--primary);
+        }
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        .form-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #ccc;
+        }
+        .form-control {
+            width: 100%;
+            background-color: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.15);
+            padding: 0.6rem 0.8rem;
+            border-radius: 4px;
+            color: #fff;
+            font-family: var(--font-stack);
+            font-size: 0.9rem;
+            outline: none;
+            transition: var(--transition-smooth);
+        }
+        .form-control:focus {
+            border-color: var(--primary);
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .btn-submit {
+            background-color: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 4px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            transition: var(--transition-smooth);
+        }
+        .btn-submit:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* Database Tree Listing on Admin */
+        .db-tree-list {
+            list-style: none;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .db-tree-item {
+            padding: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .db-tree-item span {
+            font-weight: 600;
+        }
+        .db-tree-meta {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+        .btn-action-del {
+            background: none;
+            border: none;
+            color: #f05050;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        /* Utility Copy-Paste JSON block */
+        .db-export-box {
+            margin-top: 1.5rem;
+        }
+        .db-export-box textarea {
+            font-family: monospace;
+            font-size: 0.8rem;
+            height: 120px;
+            resize: vertical;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 768px) {
+            header {
+                padding: 1rem 5%;
+            }
+            .hero-title {
+                font-size: 2rem;
+            }
+            .hero-banner {
+                padding: 1.5rem;
+                min-height: 30vh;
+            }
+            .logo {
+                font-size: 1.4rem;
+            }
+            nav {
+                gap: 0.8rem;
+            }
+            .nav-link {
+                font-size: 0.85rem;
+            }
+            .episodes-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Main Navigation Bar -->
+    <header>
+        <div class="logo" onclick="app.navigate('/')" style="cursor: pointer;">
+            <i class="fa-solid fa-play-circle"></i> CineStream
+        </div>
+        <nav>
+            <a href="#/" class="nav-link active" id="nav-home">Home</a>
+            <a href="#/admin" class="nav-link admin-btn" id="nav-admin">Admin Dashboard</a>
+        </nav>
+    </header>
+
+    <!-- Main Dynamic Interface -->
+    <main>
+        
+        <!-- View 1: Homepage (Listing all shows) -->
+        <section id="view-home" class="view-section active-view">
+            <h2 style="font-weight: 800; font-size: 1.6rem; margin-bottom: 1.5rem;">Explore Popular Series</h2>
+            <div class="shows-grid" id="shows-list-container">
+                <!-- Shows populate dynamically -->
+            </div>
+        </section>
+
+        <!-- View 2: Show Details (Seasons, episodes list) -->
+        <section id="view-show-detail" class="view-section">
+            <div id="show-hero-container">
+                <!-- Hero banner loaded dynamically -->
+            </div>
+            
+            <div class="seasons-nav-container">
+                <span style="font-weight: 700; font-size: 1.1rem;">Select Season:</span>
+                <select class="season-selector" id="season-dropdown" onchange="app.renderEpisodesList(this.value)">
+                    <!-- Seasons populated dynamically -->
+                </select>
+            </div>
+
+            <div class="episodes-grid" id="episodes-list-container">
+                <!-- Episodes populated dynamically -->
+            </div>
+        </section>
+
+        <!-- View 3: Watch Page (Custom player, streaming engine, controls, and recommendations) -->
+        <section id="view-watch" class="view-section">
+            <div class="watch-container">
+                
+                <!-- Main Streaming Left Column -->
+                <div>
+                    <div class="player-wrapper" id="player-wrapper-id">
+                        <div class="video-container-ratio" id="video-frame-holder">
+                            <!-- Injected natively as standard video tags or Google Drive iframe -->
+                        </div>
+                    </div>
+
+                    <!-- Stream Source Switcher -->
+                    <div class="source-switcher">
+                        <div class="source-desc">
+                            <strong>Playback Issue?</strong> Switch streaming engine manually. (Note: Large files stream best via "G-Drive Player")
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="source-btn-toggle active" id="btn-src-iframe" onclick="app.setPlayerSource('iframe')">G-Drive Player</button>
+                            <button class="source-btn-toggle" id="btn-src-html5" onclick="app.setPlayerSource('html5')">HTML5 Controls</button>
+                        </div>
+                    </div>
+
+                    <!-- Previous & Next controls -->
+                    <div class="episode-nav-buttons">
+                        <button class="ep-nav-btn" id="btn-prev-ep" onclick="app.navigatePreviousEpisode()">
+                            <i class="fa-solid fa-arrow-left"></i> Previous Episode
+                        </button>
+                        <button class="ep-nav-btn" id="btn-next-ep" onclick="app.navigateNextEpisode()">
+                            Next Episode <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+
+                    <!-- Meta descriptions below player -->
+                    <div class="watch-details" id="watch-details-container">
+                        <!-- Dynamic details -->
+                    </div>
+                </div>
+
+                <!-- Sidebar Recommendations Right Column -->
+                <div>
+                    <h3 class="sidebar-title">Other Episodes</h3>
+                    <div class="sidebar-list" id="watch-sidebar-list">
+                        <!-- Dynamic sidebar content -->
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- View 4: Admin Panel (Adding / Updating database via JSON block) -->
+        <section id="view-admin" class="view-section">
+            <h2 style="font-weight: 800; font-size: 1.8rem; margin-bottom: 1.5rem;">Database Management Panel</h2>
+            
+            <div class="admin-dashboard">
+                
+                <!-- Forms Panel -->
+                <div class="admin-box">
+                    <h3 class="admin-title">Add / Edit Show</h3>
+                    <form id="form-add-show" onsubmit="app.handleCreateShow(event)">
+                        <div class="form-group">
+                            <label class="form-label">Show Title</label>
+                            <input type="text" id="admin-show-title" class="form-control" placeholder="e.g. Extraordinary" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Genre</label>
+                                <input type="text" id="admin-show-genre" class="form-control" placeholder="e.g. Comedy, Superhero" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Poster URL</label>
+                                <input type="url" id="admin-show-poster" class="form-control" placeholder="https://..." required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Banner Image URL</label>
+                            <input type="url" id="admin-show-banner" class="form-control" placeholder="https://..." required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea id="admin-show-desc" class="form-control" rows="3" placeholder="Write plot overview..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn-submit">Save Show Metadata</button>
+                    </form>
+
+                    <br><hr style="border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 1.5rem 0;"><br>
+
+                    <h3 class="admin-title">Add / Edit Episode</h3>
+                    <form id="form-add-episode" onsubmit="app.handleCreateEpisode(event)">
+                        <div class="form-group">
+                            <label class="form-label">Select Associated Show</label>
+                            <select id="admin-ep-show-select" class="form-control" required>
+                                <!-- Populated dynamically from state -->
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Season Number</label>
+                                <input type="number" id="admin-ep-season" class="form-control" placeholder="1" min="1" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Episode Number</label>
+                                <input type="number" id="admin-ep-number" class="form-control" placeholder="1" min="1" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Episode Title</label>
+                            <input type="text" id="admin-ep-title" class="form-control" placeholder="e.g. Episode 1" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Google Drive Video URL / File ID</label>
+                            <input type="text" id="admin-ep-drive" class="form-control" placeholder="Paste ID or Link" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Episode Thumbnail Image URL</label>
+                            <input type="url" id="admin-ep-thumb" class="form-control" placeholder="https://..." required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea id="admin-ep-desc" class="form-control" rows="2" placeholder="Episode synopsis..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn-submit">Publish Episode</button>
+                    </form>
+                </div>
+
+                <!-- Database List and Export/Import Utilities -->
+                <div class="admin-box" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div>
+                        <h3 class="admin-title">Database Content Structure</h3>
+                        <ul class="db-tree-list" id="admin-db-tree">
+                            <!-- Populated dynamically -->
+                        </ul>
+                    </div>
+                    
+                    <div class="db-export-box">
+                        <h3 class="admin-title">Import & Export Raw DB JSON</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">
+                            Below is the raw system database state. Paste any formatted backup JSON blocks here and click "Import JSON DB" to safely load your configurations.
+                        </p>
+                        <textarea id="admin-json-io" class="form-control" style="margin-bottom: 10px;"></textarea>
+                        <div class="form-row">
+                            <button class="btn-submit" onclick="app.importRawDatabase()">Import JSON DB</button>
+                            <button class="btn-submit" style="background: #333;" onclick="app.exportRawDatabase()">Refresh Output</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- App Engine JavaScript -->
+    <script>
+        /**
+         * DEFAULT SEED METADATA DATABASE
+         * Seed content configured with the Extraordinary Season 1 episodes.
+         */
+        const SEED_DATABASE = {
+            "shows": [
+                {
+                    "id": "show-extraordinary",
+                    "title": "Extraordinary",
+                    "poster": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500",
+                    "banner": "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200",
+                    "description": "In a world where everyone develops a unique superpower on their 18th birthday, 25-year-old Jen is still waiting to get hers. Adrift in a big, confusing world, she embarks on a journey to find her maybe-superpower, and along the way, discovers the joy of being just kind of okay.",
+                    "genre": "Superhero, Comedy, Sci-Fi",
+                    "seasons": [
+                        {
+                            "seasonNumber": 1,
+                            "episodes": [
+                                {
+                                    "episodeNumber": 1,
+                                    "title": "Episode 1",
+                                    "description": "Welcome to a world where everyone has a superpower. Except Jen, who feels entirely left behind in her quest to find hers.",
+                                    "thumbnail": "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=600",
+                                    "driveUrl": "https://drive.google.com/file/d/1FzKO1LvkopPN2ZzFoFhD_70qUQXX6z41/preview"
+                                },
+                                {
+                                    "episodeNumber": 2,
+                                    "title": "Episode 2",
+                                    "description": "Jen explores different routes to trigger her dormant superpowers while trying to cope with the challenges of everyday life.",
+                                    "thumbnail": "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=600",
+                                    "driveUrl": "https://drive.google.com/file/d/1eDBDe2ySKjTx3a1PoQIs5a3ZmQjzZ2Lv/preview"
+                                },
+                                {
+                                    "episodeNumber": 3,
+                                    "title": "Episode 3",
+                                    "description": "Jen goes on a mission that doesn't quite end up where she expected, with her roommates offering unique, erratic assistance.",
+                                    "thumbnail": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600",
+                                    "driveUrl": "https://drive.google.com/file/d/1SLShJp67dF8FDQIfCSv8TXo6u2ptaxmQ/preview"
+                                },
+                                {
+                                    "episodeNumber": 4,
+                                    "title": "Episode 4",
+                                    "description": "Kash's plans to make an impact as a superhero encounter some unexpected, hilarious road blocks.",
+                                    "thumbnail": "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600",
+                                    "driveUrl": "https://drive.google.com/file/d/1XWen2K2Gg28G0XhATBpJa0oGVQ4cZJI6/preview"
+                                },
+                                {
+                                    "episodeNumber": 5,
+                                    "title": "Episode 5",
+                                    "description": "Jen takes a risk to force a breakthrough, encountering complications from the people around her.",
+                                    "thumbnail": "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=600",
+                                    "driveUrl": "https://drive.google.com/file/d/1vkq1DIYUPjSlM_dMLaqAXJWNIf8sQLRI/preview"
+                                },
+                                {
+                                    "episodeNumber": 6,
+                                    "title": "Episode 6",
+                                    "description": "Secrets surface regarding Jizzlord's background, leading to new revelations for the household.",
+                                    "thumbnail": "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=600",
+                                    "driveUrl": "https://drive.google.com/file/d/15Bnb77jeXnvP12_wk1egGTfBvQdO67hk/preview"
+                                },
+                                {
+                                    "episodeNumber": 7,
+                                    "title": "Episode 7",
+                                    "description": "Jen finds herself caught in a whirlwind of emotional decisions ahead of an important gathering.",
+                                    "thumbnail": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600",
+                                    "driveUrl": "https://drive.google.com/file/d/1_Cah7yn6mN1Y8blenPaE8CW1mjJjLBk1/preview"
+                                },
+                                {
+                                    "episodeNumber": 8,
+                                    "title": "Episode 8",
+                                    "description": "Season finale. Jen makes a monumental choice to figure out her identity once and for all.",
+                                    "thumbnail": "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600",
+                                    "driveUrl": "https://drive.google.com/file/d/1Uven3Kp5TdFMCAlU5CHHmsiPhV78XJ5e/preview"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        };
+
+        class CineStreamApp {
+            constructor() {
+                this.db = null;
+                this.currentRoute = '/';
+                this.activeStreamingPlayerType = 'iframe'; // Default: 'iframe'
+                
+                this.initDatabase();
+                
+                window.addEventListener('hashchange', () => this.handleRoute());
+                window.addEventListener('load', () => this.handleRoute());
+            }
+
+            // Core Local Storage Data Handling
+            initDatabase() {
+                const stored = localStorage.getItem('cinestream_db');
+                let parsed = null;
+                
+                if (stored) {
+                    try {
+                        parsed = JSON.parse(stored);
+                    } catch (e) {
+                        console.error("Corruption detected in local storage JSON.", e);
+                    }
+                }
+                
+                // FORCE MIGRATION: If there is no DB, OR if the stored DB contains the old "stranger things" mock data,
+                // replace it with the user's customized "Extraordinary" database setup.
+                if (!parsed || parsed.shows.some(s => s.id === 'show-stranger-things') || !parsed.shows.some(s => s.id === 'show-extraordinary')) {
+                    this.db = SEED_DATABASE;
+                    this.saveDatabase();
+                } else {
+                    this.db = parsed;
+                }
+            }
+
+            saveDatabase() {
+                localStorage.setItem('cinestream_db', JSON.stringify(this.db));
+            }
+
+            // Routing Management (SPA Router Engine)
+            handleRoute() {
+                const hash = window.location.hash || '#/';
+                this.currentRoute = hash;
+
+                // De-activate all routes
+                document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active-view'));
+                document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+
+                // Routing Rules
+                if (hash === '#/' || hash === '#') {
+                    document.getElementById('view-home').classList.add('active-view');
+                    document.getElementById('nav-home').classList.add('active');
+                    this.renderHomepage();
+                } 
+                else if (hash.startsWith('#/show/')) {
+                    document.getElementById('view-show-detail').classList.add('active-view');
+                    const parts = hash.split('/');
+                    const showId = parts[2];
+                    this.renderShowDetails(showId);
+                } 
+                else if (hash.startsWith('#/watch/')) {
+                    document.getElementById('view-watch').classList.add('active-view');
+                    const parts = hash.split('/');
+                    const showId = parts[2];
+                    const seasonNum = parseInt(parts[3]);
+                    const epNum = parseInt(parts[4]);
+                    this.renderWatchPage(showId, seasonNum, epNum);
+                } 
+                else if (hash === '#/admin') {
+                    document.getElementById('view-admin').classList.add('active-view');
+                    document.getElementById('nav-admin').classList.add('active');
+                    this.renderAdminPanel();
+                }
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            navigate(route) {
+                window.location.hash = '#' + route;
+            }
+
+            // Extract Google Drive ID safely from URL strings
+            getGoogleDriveId(url) {
+                if (!url) return '';
+                const regexs = [
+                    /\/file\/d\/([a-zA-Z0-9_-]+)/,
+                    /id=([a-zA-Z0-9_-]+)/,
+                    /\/d\/([a-zA-Z0-9_-]+)/
+                ];
+                for (let regex of regexs) {
+                    const match = url.match(regex);
+                    if (match && match[1]) {
+                        return match[1];
+                    }
+                }
+                return url.trim(); 
+            }
+
+            // Renders Homepage Listings
+            renderHomepage() {
+                const container = document.getElementById('shows-list-container');
+                container.innerHTML = '';
+
+                if (this.db.shows.length === 0) {
+                    container.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: 3rem 0; color: var(--text-muted);">
+                            <i class="fa-solid fa-rectangle-list" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                            <p>No titles found in database.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                this.db.shows.forEach(show => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.onclick = () => this.navigate(`/show/${show.id}`);
+                    card.innerHTML = `
+                        <div class="card-img-wrapper">
+                            <img src="${show.poster}" alt="${show.title}" loading="lazy">
+                        </div>
+                        <div class="card-details">
+                            <span class="card-genre">${show.genre}</span>
+                            <h3 class="card-title">${show.title}</h3>
+                            <p class="card-desc">${show.description}</p>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+
+            // Renders Show Details Page
+            renderShowDetails(showId) {
+                const show = this.db.shows.find(s => s.id === showId);
+                if (!show) {
+                    document.getElementById('show-hero-container').innerHTML = `<p style="padding: 2rem;">Show details not found.</p>`;
+                    return;
+                }
+
+                document.getElementById('show-hero-container').innerHTML = `
+                    <div class="hero-banner" style="background-image: url('${show.banner}');">
+                        <div class="hero-content">
+                            <span class="hero-genre">${show.genre}</span>
+                            <h1 class="hero-title">${show.title}</h1>
+                            <p class="hero-desc">${show.description}</p>
+                        </div>
+                    </div>
+                `;
+
+                const dropdown = document.getElementById('season-dropdown');
+                dropdown.innerHTML = '';
+                
+                if (!show.seasons || show.seasons.length === 0) {
+                    dropdown.innerHTML = `<option value="">No Seasons Found</option>`;
+                    document.getElementById('episodes-list-container').innerHTML = `
+                        <p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 2rem;">No episodes available.</p>`;
+                    return;
+                }
+
+                show.seasons.sort((a,b) => a.seasonNumber - b.seasonNumber);
+                show.seasons.forEach(season => {
+                    const opt = document.createElement('option');
+                    opt.value = season.seasonNumber;
+                    opt.textContent = `Season ${season.seasonNumber}`;
+                    dropdown.appendChild(opt);
+                });
+
+                this.renderEpisodesList(show.seasons[0].seasonNumber, showId);
+            }
+
+            renderEpisodesList(seasonNum, showId) {
+                if (!showId) {
+                    const parts = window.location.hash.split('/');
+                    showId = parts[2];
+                }
+                const show = this.db.shows.find(s => s.id === showId);
+                const season = show.seasons.find(s => s.seasonNumber == seasonNum);
+                const container = document.getElementById('episodes-list-container');
+                container.innerHTML = '';
+
+                if (!season || !season.episodes || season.episodes.length === 0) {
+                    container.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 2rem;">No episodes configured for this Season.</p>`;
+                    return;
+                }
+
+                season.episodes.sort((a,b) => a.episodeNumber - b.episodeNumber);
+                season.episodes.forEach(ep => {
+                    const card = document.createElement('div');
+                    card.className = 'episode-card';
+                    card.onclick = () => this.navigate(`/watch/${showId}/${seasonNum}/${ep.episodeNumber}`);
+                    card.innerHTML = `
+                        <div class="episode-thumb-wrapper">
+                            <img src="${ep.thumbnail || show.banner}" alt="${ep.title}" loading="lazy">
+                            <div class="episode-thumb-play">
+                                <i class="fa-solid fa-play"></i>
+                            </div>
+                        </div>
+                        <div class="episode-card-body">
+                            <div class="episode-meta">Episode ${ep.episodeNumber}</div>
+                            <h4 class="episode-title">${ep.title}</h4>
+                            <p class="episode-desc">${ep.description}</p>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+
+            // Video Player Streaming Engine Architecture
+            renderWatchPage(showId, seasonNum, epNum) {
+                const show = this.db.shows.find(s => s.id === showId);
+                const season = show ? show.seasons.find(s => s.seasonNumber == seasonNum) : null;
+                const episode = season ? season.episodes.find(e => e.episodeNumber == epNum) : null;
+
+                if (!episode) {
+                    document.getElementById('video-frame-holder').innerHTML = `<p style="padding:2rem;">Episode details not found.</p>`;
+                    return;
+                }
+
+                document.getElementById('watch-details-container').innerHTML = `
+                    <div class="watch-show-title">${show.title} — Season ${seasonNum}, Episode ${epNum}</div>
+                    <h2 class="watch-episode-heading">${episode.title}</h2>
+                    <p class="watch-episode-desc">${episode.description}</p>
+                `;
+
+                this.buildStreamingVideoPlayer(episode.driveUrl);
+
+                // Handle Prev / Next Button states
+                const prevBtn = document.getElementById('btn-prev-ep');
+                const nextBtn = document.getElementById('btn-next-ep');
+                
+                const prevEp = season.episodes.find(e => e.episodeNumber == epNum - 1);
+                const nextEp = season.episodes.find(e => e.episodeNumber == epNum + 1);
+
+                if (prevEp) {
+                    prevBtn.removeAttribute('disabled');
+                    prevBtn.dataset.target = `/watch/${showId}/${seasonNum}/${prevEp.episodeNumber}`;
+                } else {
+                    prevBtn.setAttribute('disabled', 'true');
+                }
+
+                if (nextEp) {
+                    nextBtn.removeAttribute('disabled');
+                    nextBtn.dataset.target = `/watch/${showId}/${seasonNum}/${nextEp.episodeNumber}`;
+                } else {
+                    nextBtn.setAttribute('disabled', 'true');
+                }
+
+                this.renderRecommendations(showId, seasonNum, epNum);
+            }
+
+            buildStreamingVideoPlayer(driveUrl) {
+                const holder = document.getElementById('video-frame-holder');
+                holder.innerHTML = '';
+
+                const driveId = this.getGoogleDriveId(driveUrl);
+                
+                document.getElementById('btn-src-iframe').classList.remove('active');
+                document.getElementById('btn-src-html5').classList.remove('active');
+
+                if (this.activeStreamingPlayerType === 'iframe') {
+                    document.getElementById('btn-src-iframe').classList.add('active');
+                    holder.innerHTML = `
+                        <iframe src="https://drive.google.com/file/d/${driveId}/preview" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                    `;
+                } else {
+                    document.getElementById('btn-src-html5').classList.add('active');
+                    const streamUrl = `https://drive.google.com/uc?export=download&id=${driveId}`;
+                    
+                    holder.innerHTML = `
+                        <video id="custom-html5-player" controls preload="auto" style="width:100%; height:100%; object-fit: contain;">
+                            <source src="${streamUrl}" type="video/mp4">
+                            Your browser does not support HTML5 direct streaming. Switch back to Google Player above.
+                        </video>
+                    `;
+                }
+            }
+
+            setPlayerSource(type) {
+                this.activeStreamingPlayerType = type;
+                const hash = window.location.hash || '';
+                const parts = hash.split('/');
+                if (parts.length >= 5) {
+                    const showId = parts[2];
+                    const seasonNum = parseInt(parts[3]);
+                    const epNum = parseInt(parts[4]);
+                    const show = this.db.shows.find(s => s.id === showId);
+                    const season = show ? show.seasons.find(s => s.seasonNumber == seasonNum) : null;
+                    const episode = season ? season.episodes.find(e => e.episodeNumber == epNum) : null;
+                    if (episode) {
+                        this.buildStreamingVideoPlayer(episode.driveUrl);
+                    }
+                }
+            }
+
+            navigatePreviousEpisode() {
+                const btn = document.getElementById('btn-prev-ep');
+                if (btn.dataset.target) {
+                    this.navigate(btn.dataset.target);
+                }
+            }
+
+            navigateNextEpisode() {
+                const btn = document.getElementById('btn-next-ep');
+                if (btn.dataset.target) {
+                    this.navigate(btn.dataset.target);
+                }
+            }
+
+            renderRecommendations(currentShowId, currentSeasonNum, currentEpNum) {
+                const container = document.getElementById('watch-sidebar-list');
+                container.innerHTML = '';
+                const show = this.db.shows.find(s => s.id === currentShowId);
+                if (!show) return;
+
+                let compiledList = [];
+
+                show.seasons.forEach(season => {
+                    season.episodes.forEach(ep => {
+                        if (!(season.seasonNumber == currentSeasonNum && ep.episodeNumber == currentEpNum)) {
+                            compiledList.push({
+                                seasonNum: season.seasonNumber,
+                                ep: ep
+                            });
+                        }
+                    });
+                });
+
+                if (compiledList.length === 0) {
+                    container.innerHTML = `<p style="font-size:0.85rem; color:var(--text-muted);">No recommendations available.</p>`;
+                    return;
+                }
+
+                // Show other episodes in sequence
+                compiledList.sort((a,b) => a.ep.episodeNumber - b.ep.episodeNumber);
+                const displayedList = compiledList.slice(0, 5);
+
+                displayedList.forEach(item => {
+                    const recCard = document.createElement('div');
+                    recCard.className = 'sidebar-item';
+                    recCard.onclick = () => this.navigate(`/watch/${currentShowId}/${item.seasonNum}/${item.ep.episodeNumber}`);
+                    recCard.innerHTML = `
+                        <div class="sidebar-thumb">
+                            <img src="${item.ep.thumbnail || show.banner}" alt="${item.ep.title}" loading="lazy">
+                        </div>
+                        <div class="sidebar-info">
+                            <span class="sidebar-ep-meta">S${item.seasonNum} • Episode ${item.ep.episodeNumber}</span>
+                            <span class="sidebar-ep-title" title="${item.ep.title}">${item.ep.title}</span>
+                        </div>
+                    `;
+                    container.appendChild(recCard);
+                });
+            }
+
+            // Admin Dashboard Processing logic
+            renderAdminPanel() {
+                const selectElement = document.getElementById('admin-ep-show-select');
+                selectElement.innerHTML = '';
+                
+                this.db.shows.forEach(show => {
+                    const opt = document.createElement('option');
+                    opt.value = show.id;
+                    opt.textContent = show.title;
+                    selectElement.appendChild(opt);
+                });
+
+                this.renderAdminDbTree();
+                this.exportRawDatabase();
+            }
+
+            renderAdminDbTree() {
+                const container = document.getElementById('admin-db-tree');
+                container.innerHTML = '';
+
+                if (this.db.shows.length === 0) {
+                    container.innerHTML = `<li class="db-tree-item">No metadata found in database.</li>`;
+                    return;
+                }
+
+                this.db.shows.forEach((show) => {
+                    const li = document.createElement('li');
+                    li.className = 'db-tree-item';
+                    li.style.background = 'rgba(255, 255, 255, 0.02)';
+                    li.style.borderLeft = '3px solid var(--primary)';
+                    li.innerHTML = `
+                        <div>
+                            <span>${show.title}</span> <span class="db-tree-meta">[Show ID: ${show.id}]</span>
+                        </div>
+                        <button class="btn-action-del" onclick="app.deleteShow('${show.id}')" title="Delete Show">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    `;
+                    container.appendChild(li);
+
+                    if (show.seasons) {
+                        show.seasons.forEach(season => {
+                            season.episodes.forEach(ep => {
+                                const epLi = document.createElement('li');
+                                epLi.className = 'db-tree-item';
+                                epLi.style.paddingLeft = '30px';
+                                epLi.innerHTML = `
+                                    <div class="db-tree-meta">
+                                        <i class="fa-solid fa-turn-up" style="transform: rotate(90deg); margin-right: 8px;"></i>
+                                        S${season.seasonNumber} Ep${ep.episodeNumber} — ${ep.title}
+                                    </div>
+                                    <button class="btn-action-del" style="color:rgba(255,255,255,0.4)" onclick="app.deleteEpisode('${show.id}', ${season.seasonNumber}, ${ep.episodeNumber})" title="Remove Episode">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                `;
+                                container.appendChild(epLi);
+                            });
+                        });
+                    }
+                });
+            }
+
+            handleCreateShow(event) {
+                event.preventDefault();
+                const title = document.getElementById('admin-show-title').value.trim();
+                const genre = document.getElementById('admin-show-genre').value.trim();
+                const poster = document.getElementById('admin-show-poster').value.trim();
+                const banner = document.getElementById('admin-show-banner').value.trim();
+                const description = document.getElementById('admin-show-desc').value.trim();
+
+                const id = 'show-' + title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+                if (this.db.shows.some(s => s.id === id)) {
+                    alert("A show with this matching unique ID already exists.");
+                    return;
+                }
+
+                const newShow = { id, title, poster, banner, description, genre, seasons: [] };
+
+                this.db.shows.push(newShow);
+                this.saveDatabase();
+                this.renderAdminPanel();
+                
+                document.getElementById('form-add-show').reset();
+                alert(`"${title}" published successfully.`);
+            }
+
+            handleCreateEpisode(event) {
+                event.preventDefault();
+                const showId = document.getElementById('admin-ep-show-select').value;
+                const seasonNum = parseInt(document.getElementById('admin-ep-season').value);
+                const epNum = parseInt(document.getElementById('admin-ep-number').value);
+                const title = document.getElementById('admin-ep-title').value.trim();
+                const driveUrl = document.getElementById('admin-ep-drive').value.trim();
+                const thumbnail = document.getElementById('admin-ep-thumb').value.trim();
+                const description = document.getElementById('admin-ep-desc').value.trim();
+
+                const show = this.db.shows.find(s => s.id === showId);
+                if (!show) return;
+
+                let season = show.seasons.find(s => s.seasonNumber === seasonNum);
+                if (!season) {
+                    season = { seasonNumber: seasonNum, episodes: [] };
+                    show.seasons.push(season);
+                }
+
+                if (season.episodes.some(e => e.episodeNumber === epNum)) {
+                    alert(`Episode ${epNum} already exists inside Season ${seasonNum}.`);
+                    return;
+                }
+
+                const newEpisode = { episodeNumber: epNum, title, description, thumbnail, driveUrl };
+
+                season.episodes.push(newEpisode);
+                this.saveDatabase();
+                this.renderAdminPanel();
+
+                document.getElementById('form-add-episode').reset();
+                document.getElementById('admin-ep-show-select').value = showId;
+                alert(`Episode "${title}" published successfully.`);
+            }
+
+            deleteShow(showId) {
+                if (confirm("Permanently delete this show?")) {
+                    this.db.shows = this.db.shows.filter(s => s.id !== showId);
+                    this.saveDatabase();
+                    this.renderAdminPanel();
+                }
+            }
+
+            deleteEpisode(showId, seasonNum, epNum) {
+                if (confirm(`Remove Episode ${epNum} from Season ${seasonNum}?`)) {
+                    const show = this.db.shows.find(s => s.id === showId);
+                    if (show) {
+                        const season = show.seasons.find(s => s.seasonNumber === seasonNum);
+                        if (season) {
+                            season.episodes = season.episodes.filter(e => e.episodeNumber !== epNum);
+                            if (season.episodes.length === 0) {
+                                show.seasons = show.seasons.filter(s => s.seasonNumber !== seasonNum);
+                            }
+                        }
+                    }
+                    this.saveDatabase();
+                    this.renderAdminPanel();
+                }
+            }
+
+            exportRawDatabase() {
+                const ioBox = document.getElementById('admin-json-io');
+                ioBox.value = JSON.stringify(this.db, null, 2);
+            }
+
+            importRawDatabase() {
+                const ioBox = document.getElementById('admin-json-io').value.trim();
+                try {
+                    const parsed = JSON.parse(ioBox);
+                    if (parsed && Array.isArray(parsed.shows)) {
+                        this.db = parsed;
+                        this.saveDatabase();
+                        this.renderAdminPanel();
+                        alert("Database configuration imported successfully.");
+                    } else {
+                        alert("Invalid JSON format. Check configuration structure.");
+                    }
+                } catch (e) {
+                    alert("Unable to parse JSON structure.");
+                    console.error(e);
+                }
+            }
+        }
+
+        const app = new CineStreamApp();
+    </script>
+</body>
+</html>
